@@ -1,7 +1,7 @@
 
 # Risiko Brettspiel-Simulator
 
-Der Brettspiel-Klassiker "Risiko" und seine zahlreichen Versionen erfreuen sich großer Beliebtheit. Aufregende Schlachten, der Wunsch nach Weltherrschaft, Bündnisse und Betrug sind Teil einer üblichen Risiko-Runde. Reize, die mich und meine Freunde regelmäßig zu einer Partie verführen.
+Der Brettspiel-Klassiker "Risiko" und seine zahlreichen Versionen erfreuen sich großer Beliebtheit. Aufregende Schlachten, der Wunsch nach Weltherrschaft, Bündnisse und Betrug sind Teil einer üblichen Risiko-Runde. Reize, die meine Freunde und mich regelmäßig zu einer Partie verführen.
 
 
 ## Spielphasen
