@@ -114,7 +114,7 @@ Diese Klasse ist hauptsächlich dafür verantwortlich, Gebiete und Kartenboni zu
 
 ### Requirements
 
-Die externen Bibliotheken sind in der Datei requirements.txt gelistet.
+Die externen Bibliotheken sind in der Datei req.txt gelistet.
 
 Bisher wurde das Projekt nur unter Python 3.11 und Windows 10 getestet.
 
