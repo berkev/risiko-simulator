@@ -1,0 +1,67 @@
+
+
+
+
+
+\documentclass[12pt, letterpaper]{article}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[ngerman]{babel}
+
+
+\title{Notizen zum Projekt}
+\author{Kevin P. Bernowski}
+\date{\today}
+
+
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\section{Risiko-Simulator}
+    \subsection{Risiko}
+
+    Die Spielregeln und der Spielverlauf werden in der README-Datei des Git-Projektes erklärt: \url{https://github.com/berkev/risiko-simulator}.
+
+    
+    \subsection{Modellierung}
+
+    Ein Spielbrett ist ein bidirektionaler Graph 
+    \[G := (V,E), \hspace{1cm} E\subset V\times V.\]
+    Die Knoten in 
+    \[V :=\{0,1,...,N\}, \hspace{1cm} N \in \mathbf{N} \]
+    werden im folgenden auch \textbf{Gebiete} genannt.
+    \newline
+    Die Truppenstärke und die Farbe zu einer gegebenen Farbmenge $\mathcal{F}$ zum Zeitpunkt $n\in\mathbf{N}$ werden definiert als
+    \[ t_{n}:V\rightarrow \mathbf{N}_{>0},
+    \] und 
+    \[ f_{n}:V\rightarrow \mathcal{F}.\]
+    \newline
+    Ein Spiel(-verlauf) der Länge $L\in\mathbf{N}$ mit maximaler Truppenreserve $K\in\mathbf{N}$ auf einem Spielbrett $G$ gegeben die Farbmenge $\mathcal{F}$  bezeichnet eine Folge von Tupeln 
+    \[((t_{n},f_{n}))_{n=0}^{L}\]
+    mit den folgenden Bedingungen:
+    \begin{enumerate}
+        \item Ein Spieler kann höchstens $K$ Truppen auf seine Gebiete verteilt haben:
+        \[\forall c\in\mathcal{F},n\leq L: \sum_{k\in V, f_{n}(k)=c} \leq K\]
+        \item keine unbesetzten Gebiete:
+        \[\forall v \in V,n\leq L: t_{n}(v)>0\]
+        \item Einmal raus, immer raus:
+        \[\forall c\in \mathcal{F}:\]
+        \[\exists i\leq L: c \notin \{f_{i}(v) : v\in V\} \Rightarrow c \notin \{f_{j}(v) : v\in V\}\hspace{5mm} \forall j=i,...,L.\]
+    \end{enumerate}
+    Die dazugehörige Menge aller Spielverläufe schreiben wir als
+    \[ S(G,K,\mathcal{F}) \]
+    und die Teilmenge aller Spiele der Länge $l\in\mathbf{N}$ wird bezeichnet durch
+    \[S_{l}(G,K,\mathcal{F}).\]
+        
+
+    
+
+    
+
+\section{Analyse von Gewinnstrategien}
+
+
+\end{document}
