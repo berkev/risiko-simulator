@@ -6,7 +6,6 @@ from spielfeld import spielfeld
 from spielconfig import *
 import time
 import numpy as np
-import datetime
 """
 Hauptklasse des Projektes die alle nötigen Datenstrukturen für eine
 Spielausführung bereithält.
@@ -60,10 +59,10 @@ class spiel:
     int spielerAmZug        : Erster Spieler
     int[[]] gebieteVon      : Liste pro Spieler mit seinen Gebieten
     bool log                : True wenn die Konsole das Spielgeschehen vollkommen ausgeben soll
-    string savegame         : Pfad zu einer Datei in die die Spielhistorie abgelegt werden soll
+    
     Zusätzlich zum allgemeine Zustand der Daten soll das Spiel auch den Zustand 
     """
-    def __init__(self, spielerliste: list[player], map: spielfeld, stapel: list[karte.karte], log=True, savegame='') -> None:
+    def __init__(self, spielerliste: list[player], map: spielfeld, stapel: list[karte.karte], log=True) -> None:
         
         self.spielerliste = spielerliste
         self.map = map
@@ -103,8 +102,7 @@ class spiel:
                         "man": False,
                         "validGeb": [],
                         "validKlassen": []}
-        self.sg = savegame
-
+        
         random.shuffle(stapel)
         self.spielerAmZug = random.randrange(0,len(spielerliste))
         self.konsolen_Log(f"Erster Spieler ist {self.spielerliste[self.spielerAmZug].name}\n")
@@ -420,13 +418,7 @@ class spiel:
     def sende_zustand_karte(self,spielerPos):
         """Sende die Attribute Besatzung und TruppenZahl an den spielerPos.ten Spieler"""
         return {"besatzung":self.besatzung,"truppenZahl":self.truppenZahl}
-    def logge_zustand_karte(self):
-        try:
-            with open(self.sg,'a+t') as logfile:
-                logfile.write(str(self.besatzung)+str(self.truppenZahl)+'\n')
-        except Exception as err:
-            self.konsolen_Log("Something went wrong\n")
-            self.konsolen_Log(err)
+    
     def sende_kommandos(self):
         kommandos = self.get_aktionen()[1]
         return ".".join(kommandos)
@@ -517,8 +509,7 @@ class spiel:
 
         
         wahlFunktion(spielerPos,*argumente)
-        if self.sg:
-            self.logge_zustand_karte()
+
         self.setze_angreifer_und_manneuver(spielerPos)
                 
         
@@ -753,18 +744,6 @@ class spiel:
     
     def main(self):
         
-        if self.sg:
-            try:
-                print(self.map.grenzen)
-                with open(self.sg,'a+t') as logfile:
-                    logfile.write(datetime.datetime.now().strftime('%a %d %b %Y, %I:%M%p'))
-                    logfile.write('\n')
-                    logfile.write("Borders\n")
-                    for border in self.map.grenzen:
-                        logfile.write(str(border))
-                    logfile.write('\n\n')
-            except Exception as err:
-                print(err)
         while not self.ende:
             self.zug_starten()
             spielerPos = self.spielerAmZug
@@ -818,7 +797,7 @@ if __name__ == "__main__":
         spieler.append(HumanPlayer(yourName,"Mensch"))
 
  
-    rundeEins = spiel(spieler,feld,karten,True,"data\\loggame.txt")
+    rundeEins = spiel(spieler,feld,karten,True)
     rundeEins.main() 
 
         
