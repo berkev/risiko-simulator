@@ -1,4 +1,7 @@
-import pygame
+import contextlib
+
+with contextlib.redirect_stdout(None):
+    import pygame
 
 RADIUS = 10
 RADIUS_STEP = 5
@@ -17,6 +20,7 @@ def read_game_history(path: str,split: str):
         return borders.strip(),text.split(split)
     except Exception as err:
         print(err)
+        print("Could't read the file properly")
         return []
 
 def expand_history(history: list[str]):
@@ -47,10 +51,12 @@ def draw_vertices(surf: pygame.Surface, rects: list[pygame.Rect], colors: list[p
     """Draw the bubbles centered on the given rects"""
     for k in range(len(rects)):
         pygame.draw.circle(surf,colors[k],rects[k].center,float(rects[k].w)/2)
+
 def random_color():
     """generate a random tripple representing a color"""
     r,g,b = random.randrange(0,255),random.randrange(0,255),random.randrange(0,255)
     return (r,g,b)
+
 def check_collision(pos: tuple[float], rects: list[pygame.Rect]):
     """check the list of rects for collision. Return the index of the colliding rect
     Returns -1 if no collision is detected"""
@@ -58,6 +64,7 @@ def check_collision(pos: tuple[float], rects: list[pygame.Rect]):
         if rects[k].collidepoint(pos):
             return k
     return -1
+
 def move_vertice(ind: int, rects: list[pygame.Rect], coords: list[tuple], delta: tuple):
     """Move the ind. rect in rects by delta. The new center will be written to coords[ind] 
     """
@@ -68,10 +75,63 @@ def move_vertice(ind: int, rects: list[pygame.Rect], coords: list[tuple], delta:
         print(f"No vertice at index {ind}")
     except Exception as err:
         print(err)
-#pygame.init()
+
 
 if __name__ == "__main__":
     import random
+    import argparse
+    import os
+    import csv
+
+    parser = argparse.ArgumentParser(description= "Display a logfile from a spiel.Spiel-session as a manipulatable time discrete chain of graphs")
+    parser.add_help=True
+    parser.add_argument("--logfile",help="path to a spiel.Spiel-generated logfile",required=False)
+    
+    args = parser.parse_args()
+    print(args.logfile)
+
+    if not args.logfile:
+        fileWalker = os.walk("data")
+        
+        historyfiles = []
+        while not historyfiles:
+            fileStep = next(fileWalker)
+            historyfiles = fileStep[-1]
+        historyfiles.remove("borders.csv")
+        print(historyfiles)
+
+        filename = historyfiles.pop()
+        if "t" in filename:
+            truppenfile = filename
+            besatzungsfile = truppenfile.replace("t","b")
+            historyfiles.remove(besatzungsfile)
+        else:
+            besatzungsfile = filename
+            truppenfile = besatzungsfile.replace("b","t")
+            historyfiles.remove(truppenfile)
+        
+    try:
+        truppenfile=fileStep[0]+"\\"+truppenfile
+        besatzungsfile = fileStep[0]+"\\"+besatzungsfile
+        truppenHistory = []
+        besatzungsHistory = []
+        with open(truppenfile) as file:
+            reader = csv.reader(file,lineterminator="\n")
+            for row in reader:
+                truppenHistory.append([int(num) for num in row])
+        with open(besatzungsfile) as file:
+            reader = csv.reader(file,lineterminator="\n")
+            for row in reader:
+                besatzungsHistory.append([int(num) for num in row])
+        print(truppenHistory)
+        print(truppenHistory[0])
+        print(type(truppenHistory[0][0]))
+
+
+
+    except Exception as err:
+        print(err)
+
     # borders,history = read_game_history("data\\loggame.txt","\n")
     # print(borders)
     # current = history[0]
@@ -79,8 +139,6 @@ if __name__ == "__main__":
     #current = {besatzung: [i,k,j,...], truppen: [3,3,3,...,3]} (i,k,j in {0,1,..,|AnzahlSpieler|})
 
     #Code for the graph visualisation
-
-
     H = 720
     W = 1080
     pygame.init()
@@ -94,6 +152,7 @@ if __name__ == "__main__":
     bubblesColor = [random_color() for bub in bubbles]
     mousePos = (0,0)
     focusBubble = -1
+
     #mainloop
     while running:
 
