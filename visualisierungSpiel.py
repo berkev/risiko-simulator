@@ -77,6 +77,7 @@ def move_vertice(ind: int, rects: list[pygame.Rect], coords: list[tuple], delta:
         print(err)
 
 
+
 if __name__ == "__main__":
     import random
     import argparse
@@ -88,33 +89,87 @@ if __name__ == "__main__":
     parser.add_argument("--logfile",help="path to a spiel.Spiel-generated logfile",required=False)
     
     args = parser.parse_args()
-    print(args.logfile)
+    #print(args.logfile)
 
     if not args.logfile:
+
+
+
+
         fileWalker = os.walk("data")
         
         historyfiles = []
-        while not historyfiles:
-            fileStep = next(fileWalker)
-            historyfiles = fileStep[-1]
-        historyfiles.remove("borders.csv")
-        print(historyfiles)
+        
+        dirs = next(fileWalker)[1]
+        n = len(dirs)
+        position = 0
+       
+        filename = ""
+        dirname = ""
+        while not filename:
 
-        filename = historyfiles.pop()
+            while not dirname:
+                
+                for k in range(n):
+                    print("* "*(position==k)+dirs[k])
+                prompt = input("\nNavigate dirs with 'u' for up, 'd' for down.\nChoose a directory with 'cd' \n")
+                match prompt:
+                    case 'u':
+                        position = (position - 1) % n
+                    case 'd':
+                        position = (position + 1) % n
+                    case 'cd':
+                        
+                        dirname = dirs[position]
+                        csvWalker = os.walk("data\\"+dirname)
+                        files = next(csvWalker)[2]
+                        position = 0
+                        files.remove("borders.csv")
+                        m = len(files)
+                    case _:
+                        print(f"'{prompt}' is not defined")
+            
+            for k in range(m):
+                print("* "*(position==k)+files[k])
+            prompt = input("\n Navigate files with 'u' for up, 'd' for down.\nChoose a file with 'cf'\nGo back to browse directories with 'b' \n")
+            match prompt:
+                case 'u':
+                    position = (position - 1) % m
+                case 'd':
+                    position = (position + 1) % m
+                case 'cf':
+                    filename = files[position]
+                    position = 0
+                case 'b':
+                    dirname = ""
+                    position = 0
+                case _:
+                        print(f"'{prompt}' is not defined")
+            
+        
+
+        print(f"Your choice:\n\tdata/{dirname}/{filename}")
+        
+        
+
+        
         if "t" in filename:
             truppenfile = filename
             besatzungsfile = truppenfile.replace("t","b")
-            historyfiles.remove(besatzungsfile)
+            
         else:
             besatzungsfile = filename
             truppenfile = besatzungsfile.replace("b","t")
-            historyfiles.remove(truppenfile)
+            
+        print(f"\tOpening following files under path  'data/{dirname}\'\n\tbesatzung: {besatzungsfile}\n\ttruppen: {truppenfile}")
         
     try:
-        truppenfile=fileStep[0]+"\\"+truppenfile
-        besatzungsfile = fileStep[0]+"\\"+besatzungsfile
+        truppenfile="data\\"+dirname+"\\"+truppenfile
+        besatzungsfile = "data\\"+dirname+"\\"+besatzungsfile
+        bordersfile = "data\\"+dirname+"\\"+"borders.csv"
         truppenHistory = []
         besatzungsHistory = []
+        edges = []
         with open(truppenfile) as file:
             reader = csv.reader(file,lineterminator="\n")
             for row in reader:
@@ -123,10 +178,13 @@ if __name__ == "__main__":
             reader = csv.reader(file,lineterminator="\n")
             for row in reader:
                 besatzungsHistory.append([int(num) for num in row])
-        print(truppenHistory)
-        print(truppenHistory[0])
-        print(type(truppenHistory[0][0]))
-
+        with open(bordersfile) as file:
+            reader = csv.reader(file,lineterminator="\n")
+            for row in reader:
+                edges.append((int(row[0]),int(row[1])))
+        print(edges)
+       
+        
 
 
     except Exception as err:
@@ -143,16 +201,23 @@ if __name__ == "__main__":
     W = 1080
     pygame.init()
     screen = pygame.display.set_mode((W,H))
-    running = True
+    
     clock = pygame.time.Clock()
 
     #data
-    graph, coords = [(0,1),(1,2),(1,3),(2,3)],[(random.uniform(20,W-20),random.uniform(20,H-20)) for k in range(4)]
-    bubbles = [pygame.Rect(coord[0]-RADIUS,coord[1]-RADIUS,2*RADIUS,2*RADIUS) for coord in coords]
-    bubblesColor = [random_color() for bub in bubbles]
+    #graph, coords = [(0,1),(1,2),(1,3),(2,3)],[(random.uniform(20,W-20),random.uniform(20,H-20)) for k in range(4)]
+    graph = edges
+    time = 0
+    last = len(besatzungsHistory)-1
+    coords = [(random.uniform(20,W-20),random.uniform(20,H-20)) for k in range(len(besatzungsHistory[0]))]
+    bubbleSizes = [RADIUS+RADIUS_STEP*troops for troops in truppenHistory[time]]
+    bubbles = [pygame.Rect(coords[k][0]-bubbleSizes[k],coords[k][1]-bubbleSizes[k],2*bubbleSizes[k],2*bubbleSizes[k]) for k in range(len(coords))]
+    colors = [random_color() for ind in set(besatzungsHistory[0])]
+    bubblesColor = [colors[ind] for ind in besatzungsHistory[time]]
+    
     mousePos = (0,0)
     focusBubble = -1
-
+    running = True
     #mainloop
     while running:
 
@@ -172,6 +237,20 @@ if __name__ == "__main__":
                     focusBubble = check_collision(mousePos,bubbles)
                 case pygame.MOUSEBUTTONUP:
                     focusBubble = -1
+                case pygame.KEYDOWN:
+                    match event.key:
+                        case pygame.K_c:
+                            colors = [random_color() for ind in set(besatzungsHistory[0])]
+                            bubblesColor = [colors[ind] for ind in besatzungsHistory[time]]
+                        case pygame.K_n:
+                            time = (time+1) if time<last else time
+                        case pygame.K_l:
+                            time = (time-1) if time>0 else time
+                        case _:
+                            pass
+                    bubbleSizes = [RADIUS+RADIUS_STEP*troops for troops in truppenHistory[time]]
+                    bubbles = [pygame.Rect(coords[k][0]-bubbleSizes[k],coords[k][1]-bubbleSizes[k],2*bubbleSizes[k],2*bubbleSizes[k]) for k in range(len(coords))]
+                    bubblesColor = [colors[ind] for ind in besatzungsHistory[time]]
                 case _:
                     pass
         
