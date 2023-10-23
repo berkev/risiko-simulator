@@ -1,4 +1,5 @@
 import contextlib
+import math
 
 with contextlib.redirect_stdout(None):
     import pygame
@@ -6,7 +7,7 @@ with contextlib.redirect_stdout(None):
 RADIUS = 10
 RADIUS_STEP = 5
 FPS = 24
-
+BUBBLESPEED = 20
 
 def read_game_history(path: str,split: str):
     """Read a specified file.
@@ -76,6 +77,20 @@ def move_vertice(ind: int, rects: list[pygame.Rect], coords: list[tuple], delta:
     except Exception as err:
         print(err)
 
+def move_random(ind: int, rects: list[pygame.Rect], coords: list[tuple], delta: float):
+    """Move the ind. rect in rects by a random vector of length delta. The new center will be written to coords[ind] 
+    """
+    try:
+        x = random.random()*delta
+        y = math.sqrt(delta-x**2)
+        x = random.choice([x,-x])
+        y = random.choice([y,-y])
+        rects[ind].move_ip(x,y)
+        coords[ind] = rects[ind].center
+    except IndexError:
+        print(f"No vertice at index {ind}")
+    except Exception as err:
+        print(err)
 
 
 if __name__ == "__main__":
@@ -148,20 +163,21 @@ if __name__ == "__main__":
             
         
 
-        print(f"Your choice:\n\tdata/{dirname}/{filename}")
+        #print(f"Your choice:\n\tdata/{dirname}/{filename}")
         
         
 
         
-        if "t" in filename:
-            truppenfile = filename
-            besatzungsfile = truppenfile.replace("t","b")
-            
-        else:
-            besatzungsfile = filename
-            truppenfile = besatzungsfile.replace("b","t")
-            
-        print(f"\tOpening following files under path  'data/{dirname}\'\n\tbesatzung: {besatzungsfile}\n\ttruppen: {truppenfile}")
+    if "t" in filename:
+        truppenfile = filename
+        besatzungsfile = truppenfile.replace("t","b")
+        
+        
+    else:
+        besatzungsfile = filename
+        truppenfile = besatzungsfile.replace("b","t")
+        
+    #print(f"\tOpening following files under path  'data/{dirname}\'\n\tbesatzung: {besatzungsfile}\n\ttruppen: {truppenfile}")
         
     try:
         truppenfile="data\\"+dirname+"\\"+truppenfile
@@ -214,10 +230,13 @@ if __name__ == "__main__":
     bubbles = [pygame.Rect(coords[k][0]-bubbleSizes[k],coords[k][1]-bubbleSizes[k],2*bubbleSizes[k],2*bubbleSizes[k]) for k in range(len(coords))]
     colors = [random_color() for ind in set(besatzungsHistory[0])]
     bubblesColor = [colors[ind] for ind in besatzungsHistory[time]]
-    
+    bubbleDirections = [random.random()*2*math.pi for bubb in bubbles]
     mousePos = (0,0)
     focusBubble = -1
     running = True
+
+    pygame.key.set_repeat(500,100)
+    turn = math.pi/4
     #mainloop
     while running:
 
@@ -246,6 +265,27 @@ if __name__ == "__main__":
                             time = (time+1) if time<last else time
                         case pygame.K_l:
                             time = (time-1) if time>0 else time
+                        case pygame.K_r:
+                            print(f"move randomly again after {dt}seconds")
+                            for ind in range(len(coords)):
+                                #move_random(ind,bubbles,coords,5)
+                                dx = math.cos(bubbleDirections[ind])
+                                dy = math.sin(bubbleDirections[ind])
+                                x, y = bubbles[ind].left, bubbles[ind].top
+                                xStep = BUBBLESPEED*dx
+                                yStep = BUBBLESPEED*dy
+                                xStep = xStep if xStep+x>0 else -(xStep+x)
+                                xStep = xStep if xStep+x+bubbles[ind].w<W else W-(xStep+x)
+                                yStep = yStep if yStep>0 else -(yStep+y)
+                                yStep = yStep if yStep<H else H-(yStep+y)
+                                move_vertice(ind,bubbles,coords,(xStep,yStep))
+                                bubbleDirections[ind]+= (xStep<=0)*turn*((dy>=0)*(-1)+(dy<0))+\
+                                                        (xStep>=W)*turn*((dy<=0)*(-1)+(dy>0))+\
+                                                        (yStep<=0)*turn*((dx<=0)*(-1)+(dx>0))+\
+                                                        (yStep>=H)*turn*((dx>=0)*(-1)+(dx<0))
+                                                         
+                                                         
+
                         case _:
                             pass
                     bubbleSizes = [RADIUS+RADIUS_STEP*troops for troops in truppenHistory[time]]
@@ -261,6 +301,6 @@ if __name__ == "__main__":
         draw_graph(screen,graph,coords)
         draw_vertices(screen,bubbles,bubblesColor)
         pygame.display.flip()
-        clock.tick(FPS)
+        dt = clock.tick(FPS)/1000
 
     pygame.quit()
