@@ -124,7 +124,7 @@ einer virtuellen Umgebung mit [venv](https://docs.python.org/3/library/venv.html
 
 ### Ein Spiel starten
 
-\>py spiel.py name [Pfad/zu/einer/gepickleten/spielfeldinstanz]
+`py spiel.py name [Pfad/zu/einer/gepickleten/spielfeldinstanz]`
 
 
 
