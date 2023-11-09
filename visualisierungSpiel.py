@@ -136,7 +136,7 @@ if __name__ == "__main__":
                     case 'cd':
                         
                         dirname = dirs[position]
-                        csvWalker = os.walk("data\\"+dirname)
+                        csvWalker = os.walk("data/"+dirname)
                         files = next(csvWalker)[2]
                         position = 0
                         files.remove("borders.csv")
@@ -180,9 +180,9 @@ if __name__ == "__main__":
     #print(f"\tOpening following files under path  'data/{dirname}\'\n\tbesatzung: {besatzungsfile}\n\ttruppen: {truppenfile}")
         
     try:
-        truppenfile="data\\"+dirname+"\\"+truppenfile
-        besatzungsfile = "data\\"+dirname+"\\"+besatzungsfile
-        bordersfile = "data\\"+dirname+"\\"+"borders.csv"
+        truppenfile="data/"+dirname+"/"+truppenfile
+        besatzungsfile = "data/"+dirname+"/"+besatzungsfile
+        bordersfile = "data/"+dirname+"/"+"borders.csv"
         truppenHistory = []
         besatzungsHistory = []
         edges = []

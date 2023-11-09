@@ -764,7 +764,7 @@ class spiel:
     def main(self):
         if self.sg:
             filename = datetime.datetime.now().strftime("%d%m%Y_%H%M%S")
-            path = "data\\"
+            path = "data/"
             for border in self.map.grenzen:
                 path += str(border[0]+border[1]).replace('(',"").replace(')',"").replace(', ',"")
             print(f"PATH: {path}")
