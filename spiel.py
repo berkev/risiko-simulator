@@ -6,6 +6,9 @@ from spielfeld import spielfeld
 from spielconfig import *
 import time
 import numpy as np
+import datetime
+import csv
+import os
 """
 Hauptklasse des Projektes die alle nötigen Datenstrukturen für eine
 Spielausführung bereithält.
@@ -59,11 +62,11 @@ class spiel:
     int spielerAmZug        : Erster Spieler
     int[[]] gebieteVon      : Liste pro Spieler mit seinen Gebieten
     bool log                : True wenn die Konsole das Spielgeschehen vollkommen ausgeben soll
-    
+    bool savegame           : True wenn die Historie des Spiels gespeichert werden soll
     Zusätzlich zum allgemeine Zustand der Daten soll das Spiel auch den Zustand 
     """
-    def __init__(self, spielerliste: list[player], map: spielfeld, stapel: list[karte.karte], log=True) -> None:
-        
+    def __init__(self, spielerliste: list[player], map: spielfeld, stapel: list[karte.karte], log=True, savegame=False) -> None:
+    
         self.spielerliste = spielerliste
         self.map = map
         self.stapel = stapel
@@ -117,6 +120,7 @@ class spiel:
         random.shuffle(stapel)
         stopKartePos = random.randrange(len(stapel)//2,len(stapel)-1)
         
+        self.sg = savegame
         stopKarte = karte.karte("Spielende", None)
         stapel.append(stapel[stopKartePos])
         stapel[stopKartePos] = stopKarte
@@ -418,7 +422,21 @@ class spiel:
     def sende_zustand_karte(self,spielerPos):
         """Sende die Attribute Besatzung und TruppenZahl an den spielerPos.ten Spieler"""
         return {"besatzung":self.besatzung,"truppenZahl":self.truppenZahl}
-    
+    def logge_zustand_karte(self):
+        try:
+            with open(self.sg+"b"+".csv",'a') as file:
+                writer = csv.writer(file,lineterminator="\n")
+                writer.writerow(self.besatzung)
+        except Exception as err:
+            print(err)
+            
+        try:
+            with open(self.sg+"t"+".csv",'a') as file:
+                writer = csv.writer(file,lineterminator="\n")
+                writer.writerow(self.truppenZahl)
+        except Exception as err:
+            print(err)
+            
     def sende_kommandos(self):
         kommandos = self.get_aktionen()[1]
         return ".".join(kommandos)
@@ -743,7 +761,51 @@ class spiel:
             print(string)
     
     def main(self):
-        
+        if self.sg:
+            filename = datetime.datetime.now().strftime("%d%m%Y_%H%M%S")
+            path = "data/"
+            for border in self.map.grenzen:
+                path += str(border[0]+border[1]).replace('(',"").replace(')',"").replace(', ',"")
+            print(f"PATH: {path}")
+            path = path[0:min(len(path),16)]+"l"+str(len(path))
+
+            try:
+                os.makedirs(path)
+            except FileExistsError:
+                pass
+            except Exception as err:
+                print(err)
+                time.sleep(4)
+
+            self.sg = path+"/"+filename
+            try:
+                with open(path+"/"+"borders.csv",'x') as file:
+                    writer = csv.writer(file, lineterminator="\n")
+                    writer.writerows(self.map.grenzen)
+            except FileExistsError:
+                self.konsolen_Log("file exists")
+            except Exception as err:
+                print(err)
+                time.sleep(3)
+            try:
+                with open(self.sg+"b"+".csv",'x') as file:
+                    writer = csv.writer(file,lineterminator="\n")
+                    writer.writerow(self.besatzung)
+            except FileExistsError:
+                self.konsolen_Log("file exists")
+            except Exception as err:
+                print(err)
+                time.sleep(3)
+            try:
+                with open(self.sg+"t"+".csv",'x') as file:
+                    writer = csv.writer(file,lineterminator="\n")
+                    writer.writerow(self.truppenZahl)
+            except FileExistsError:
+                self.konsolen_Log("file exists")
+            except Exception as err:
+                print(err)
+                time.sleep(3)
+       
         while not self.ende:
             self.zug_starten()
             spielerPos = self.spielerAmZug
@@ -797,7 +859,7 @@ if __name__ == "__main__":
         spieler.append(HumanPlayer(yourName,"Mensch"))
 
  
-    rundeEins = spiel(spieler,feld,karten,True)
+    rundeEins = spiel(spieler,feld,karten,True,True)
     rundeEins.main() 
 
         
