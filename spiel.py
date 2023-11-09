@@ -66,7 +66,7 @@ class spiel:
     Zusätzlich zum allgemeine Zustand der Daten soll das Spiel auch den Zustand 
     """
     def __init__(self, spielerliste: list[player], map: spielfeld, stapel: list[karte.karte], log=True, savegame=False) -> None:
-        
+    
         self.spielerliste = spielerliste
         self.map = map
         self.stapel = stapel
@@ -105,8 +105,7 @@ class spiel:
                         "man": False,
                         "validGeb": [],
                         "validKlassen": []}
-        self.sg = savegame
-
+        
         random.shuffle(stapel)
         self.spielerAmZug = random.randrange(0,len(spielerliste))
         self.konsolen_Log(f"Erster Spieler ist {self.spielerliste[self.spielerAmZug].name}\n")
@@ -121,6 +120,7 @@ class spiel:
         random.shuffle(stapel)
         stopKartePos = random.randrange(len(stapel)//2,len(stapel)-1)
         
+        self.sg = savegame
         stopKarte = karte.karte("Spielende", None)
         stapel.append(stapel[stopKartePos])
         stapel[stopKartePos] = stopKarte
@@ -527,8 +527,7 @@ class spiel:
 
         
         wahlFunktion(spielerPos,*argumente)
-        if self.sg:
-            self.logge_zustand_karte()
+
         self.setze_angreifer_und_manneuver(spielerPos)
                 
         

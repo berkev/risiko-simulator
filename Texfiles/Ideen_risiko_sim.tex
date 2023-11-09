@@ -7,7 +7,8 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage[ngerman]{babel}
-
+\usepackage{mathtools}
+\usepackage{neuralnetwork}
 
 \title{Notizen zum Projekt}
 \author{Kevin P. Bernowski}
@@ -41,27 +42,100 @@
     \newline
     Ein Spiel(-verlauf) der Länge $L\in\mathbf{N}$ mit maximaler Truppenreserve $K\in\mathbf{N}$ auf einem Spielbrett $G$ gegeben die Farbmenge $\mathcal{F}$  bezeichnet eine Folge von Tupeln 
     \[((t_{n},f_{n}))_{n=0}^{L}\]
-    mit den folgenden Bedingungen:
+    wenn folgende Bedingungen für alle $c\in\mathcal{F}$ gelten:
     \begin{enumerate}
         \item Ein Spieler kann höchstens $K$ Truppen auf seine Gebiete verteilt haben:
-        \[\forall c\in\mathcal{F},n\leq L: \sum_{k\in V, f_{n}(k)=c} \leq K\]
-        \item keine unbesetzten Gebiete:
-        \[\forall v \in V,n\leq L: t_{n}(v)>0\]
+        \[\forall n\leq L: \sum_{k\in V: f_{n}(k)=c}t_n(k) \leq K\]
         \item Einmal raus, immer raus:
-        \[\forall c\in \mathcal{F}:\]
-        \[\exists i\leq L: c \notin \{f_{i}(v) : v\in V\} \Rightarrow c \notin \{f_{j}(v) : v\in V\}\hspace{5mm} \forall j=i,...,L.\]
+        %\[\forall c\in \mathcal{F}:\]
+        \[\exists i\leq L: c \notin \{f_{i}(v) : v\in V\} \Rightarrow \forall j\in\{i+1,...,L\}:c \notin \{f_{j}(v) : v\in V\} \]
+        \item Reihenfolge beachten:
+        %\[\forall c\in \mathcal{F}, i\leq L:\]
+        \[\exists n\leq L \exists v\in f_{n}^{-1}(c)\cap f_{n+1}^{-1}(c):\, t_{n}(v)<t_{n+1}(v) \]\[\Rightarrow \]
+        \[ \forall j\notin\{n\, mod\, |\mathcal{F}| + d * |\mathcal{F}| : d \in\mathbf{N}\}\,\forall x \in f_{j}^{-1}(c)\cap f_{j+1}^{-1}(c) : t_{j}(x)\geq t_{j+1}(x).\]
+        
     \end{enumerate}
+    Die erste Eigenschaft beschränkt die Summe der Truppenstärke zu jedem Zeitpunkt. Insbesondere beschränkt sie die Summe der Teilmenge von Werten $t_{n}(v)$, für deren $v$ die Funktion $f_{n}$ konstant ist.
+    
+    Die zweite Eigenschaft gewährleistet, dass eine Knotenfarbe nicht wieder zu einem späteren Zeitpunkt auftauchen kann, nachdem sie einmal auf dem Graphen verschwunden ist.
+    
+    Die dritte Eigenschaft beschränkt die Menge möglicher Zeitpunkte $n$, an denen die Truppenstärke eines Knotens $v$ zunehmen kann, abhängig von seinem Wert $f_{n}(v)$.\\ 
     Die dazugehörige Menge aller Spielverläufe schreiben wir als
     \[ S(G,K,\mathcal{F}) \]
     und die Teilmenge aller Spiele der Länge $l\in\mathbf{N}$ wird bezeichnet durch
     \[S_{l}(G,K,\mathcal{F}).\]
-        
+    Wie könnte man eine Wahrscheinlichkeit für die Ereignisse in  \[ \Omega := S(G,K,\mathcal{F}) \]
+    definieren?
+    Der naheliegende Ansatz ist, für gegebene Zustände
+    \[z_{j} := (t_{j},f_{j}),\,z_{j+1} := (t_{j+1},f_{j+1}),\, j\in\mathbf{N}\]
+    Übergangswahrscheinlichkeit 
+    \begin{align*}\mathbf{P}_{Strategie}^{j}&: (Abb(|V|,\mathbf{N}_{>0}) \times Abb(|V|, \mathcal{F}))^2 \rightarrow [0,1],\\
+    \mathbf{P}_{Strategie}^{j}&(z_{j+1}|z_{j}) := \mathbf{P}(\{\omega = \Omega|\Pi_{j+1}(\omega) = z_{j+1}\} | \{\omega = \Omega|\Pi_{j}(\omega) = z_{j} \}),
+    \end{align*}
+    zu bestimmen. $\mathbf{P}$ ist unbekannt und hängt von $G$, $K$ und $\mathcal{F}$ und den Strategien von $c\in\mathcal{F}$ ab.
+    Sei im Folgenden \[(Z_n)_{n\in\mathbf{N}}\]
+    eine Folge von Zufallsvariablen, deren Folgenglieder Werte in \[
+    Abb(|V|,\mathbf{N}_{>0}) \times Abb(|V|, \mathcal{F})
+    \] annehmen ($Z_n:=\Pi_n$).
+    
+    
+    Folgende Annahmen sollen für das erste Modell gelten:
+    \begin{enumerate}
+        \item Die bedingte Wahrscheinlichkeit $\mathbf{P}_{Strategie}^{j}(z_{j+1}|z_{j})$ hängt nur von $r = j\, mod\, |\mathcal{F}|$ ab. Ordnet man die Farben in $\mathcal{F}$, so entspricht $r$ der Farbe, die zum Zeitpunkt $j$ am Zug ist. 
+        \item $Strat:=Strategie$ hängt nur von $r$ ab. 
+    \end{enumerate}
+    Es gilt dann $\forall n\in\mathbf{N}\,\forall z_0,z_1,,z_2,...,z_n\in\Omega$:
+    \begin{align*}
+        &\mathbf{P}(Z_n=z_n,Z_{n-1}=z_{n-1},...,Z_1=z_1,Z_0=z_0) &=\\
+        &\mathbf{P}(Z_0=z_0)\mathbf{P}(Z_n=z_n,Z_{n-1}=z_{n-1},...,Z_1=z_1|Z_0=z_0) &=\\
+        &\mathbf{P}(Z_0=z_0)\mathbf{P}(Z_1=z_1|Z_0=z_0)\mathbf{P}(Z_n=z_n,...,Z_2=z_2|Z_1=z_1,Z_0=z_0) &=\\
+        &\mathbf{P}(Z_0=z_0)\mathbf{P}(Z_1=z_1|Z_0=z_0)\mathbf{P}(Z_n=z_n,...,Z_2=z_2|Z_1=z_1) &=\\
+        &\mathbf{P}(Z_0=z_0)\prod_{k=1}^{n}\mathbf{P}(Z_k=z_k|Z_{k-1}=z_{k-1}) &=\\
+        &\mathbf{P}(Z_0=z_0)\prod_{k=1}^{n}\mathbf{P}_{Strat(k\,mod\,|\mathcal{F}|)}^{k\,mod\,|\mathcal{F}|}(z_k|z_{k-1}).
+    \end{align*}
+    Somit ist $(Z_n)_n$ eine heterogene Markovkette.
+    %Ein zufälliger Spielverlauf in $ S(G,K,\mathcal{F})$ ist 
+    %eine Folge von Zufallsvektoren 
+    %\[ ((T_{n},F_{n}))_{n\in\mathbf{N}}\]
+    %auf einem Wahrscheinlichkeitsraum $(\Omega ,\mathcal{A}, %\mathbf{P})$
+    %für die gilt:
+    %\begin{align*}
+    %    \mathbf{P}(
+    %\end{align*}
 
+    \subsection{Strategien}
+    
+    \subsubsection{Rein zufällige Wahl}
+    
+    \subsection{Übergangswahrscheinlichkeiten}
     
 
     
 
-\section{Analyse von Gewinnstrategien}
+\section{Einer Maschine das Spiel beibringen}
+Zentrale Aufgabe der Maschine wird es sein, auf intelligente Weise am Spiel teilzunehmen. Sie soll aus den ihr zur Verfügung stehenden Informationen eine gültige Handlung in Form eines Kommandos ableiten.
+
+Im Vorfeld muss die Maschine alle Kommandos des Spiels kennen,
+jedoch nicht unbedingt anwenden können. Kommandos der Implementierung sind ein Buchstabe aus der Menge \{a,e,v,z,k,m\}, wobei auf v,z zwei Argumente und auf k,m drei Argumente folgen.
+
+
+Beispiel: Wir betrachten einen Spielverlauf Der Spieler mit der Farbe $c\in\mathcal{F}$ ist am Zug und es gelten 
+
+Die zweite Fähigkeit der Maschine ist es, zu jedem Zeitschritt die Farben und Truppenstärken zu beobachten. Diese Größen soll die Maschine eigenständig interpretieren lernen.
+
+\subsection{Introduction: What is learning?}
+I remember observing a friend play a video game and getting stuck. His character fell into a hole under a bridge. The only clue on how to get out was a ledge that was just out of reach. My friend had previously learned how climbable ledges looked like so he tried to use the jump button to reach the ledge multiple times without success. After multiple failed attempts he stopped and started to search for other clues. He passed by a small iron cage multiple times not knowing he could use the interact button on his controller to push the cage towards the wall to make the mentioned ledge reachable. Although the game had shown him that cages were pushable and pullable in previous stages he couldn't figure it out this time. I recalled that previously a big picture of the interact button was being displayed on the screen when my friend had moved the character towards a metal cage. This visual signal was missing this time. My friend hasn't learned that some cubical object might be movable but rather that he can interact with the game world when there is an explicit prompt on the screen telling him to do so. 
+
+I hope this short story gives you a little hint about the nuances of visual learning. It shows us how a bias (reacting to the prompt instead of the obstacle) can be detrimental to the learning process and teaches us to be careful with our learning data sets. \\
+
+Lets stay with this example for a bit. The game lets you move your character through three-dimensional structures like caves and ruins. The character is usually displayed at the center of the screen. You also can move the camera by 360° around a vertical and by 180° around a horizontal axis with the characters position as the origin. So before the player, be it a human or a neural network, can start to make sense of what the screen is even displaying they have to be familiar with the concept of projection. Most modern humans that are accostumed to television and movies shouldn't have too much problems to at least identify the implied 3d-space from observing a few gameplay frames given the resolution is high enough. Someone who has played video games before will most likely be able to navigate the game world just fine. An untrained neural network (nn) on the other hand that is only fed frame data, i.e. the colors of each pixel of a frame, has no clue what depth perception is. It doesn't know any important and reocurring pattern like a climbable ledge, or a pushable button.  
+
+\centering
+\begin{neuralnetwork} 
+\inputlayer[count=3, bias=false]{} 
+\hiddenlayer[count=2]{} 
+\outputlayer[count=1]{} 
+\end{neuralnetwork}
 
 
 \end{document}
