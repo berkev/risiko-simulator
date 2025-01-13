@@ -16,7 +16,7 @@ Folgende Teile des Zubehörs werden ausgepackt:
 - Ein Spielbrett
 - 5 Würfel
 - ein Satz Truppenfiguren pro Spieler, verschiedene Farben
-- ein Kartenstapel passend zum Spielbrett mit einer Spezialkarte, die das Spielende 
+- ein Kartenstapel passend zum Spielbrett mit einer Spezialkarte, die das Spielende ausruft
 
 Der Kartenstapel wird gemischt und die Spezialkarte wird irgendwo in die untere Hälfte des Stapels gesteckt.
 Das Spielbrett zeigt je nach Version einen Kartenausschnitt der Erde oder einer fiktiven Welt. Die einzelnen Gebiete oder Länder werden zufällig
